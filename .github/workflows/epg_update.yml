@@ -1,0 +1,33 @@
+name: Atualizar EPG VivoPlay a cada hora
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Executa a cada 1 hora
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v3
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Gerar novo EPG
+        run: npm run grab --- --site=vivoplay.com.br --output=guide.xml
+
+      - name: Commit e Push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add guide.xml
+          git commit -m "Atualização automática - $(date '+%Y-%m-%d %H:%M:%S')" || echo "Sem mudanças"
+          git push
