@@ -22,6 +22,9 @@ jobs:
           npm install
           npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml
 
+      - name: Formatar guide.xml com xmllint
+        run: xmllint --format guide.xml -o guide.xml
+
       - name: Configurar git
         run: |
           git config user.name "github-actions"
