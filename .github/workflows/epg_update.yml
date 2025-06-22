@@ -1,38 +1,42 @@
-name: Atualizar Canais VivoPlay a cada hora
+name: Atualizar EPG VivoPlay a cada 1 hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # A cada hora
+    - cron: '0 * * * *'  # A cada 1 hora
   workflow_dispatch:
 
 jobs:
-  update-vivoplay:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do repositório
+      - name: Checkout do seu repositório
         uses: actions/checkout@v3
-        with:
-          persist-credentials: true
-          fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Instalar Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Pra evitar warning de versão de engine
+          node-version: '20'
 
-      - name: Instalar dependências (pular postinstall)
-        run: SKIP_POSTINSTALL=true npm install
-
-      - name: Atualizar canais VivoPlay
+      - name: Clonar o repositório original do iptv-org/epg
         run: |
-          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=./sites/vivoplay.com.br/vivoplay.com.br.channels.xml
+          git clone --depth 1 https://github.com/iptv-org/epg.git epg-org
 
-      - name: Commit e push se houver alterações
+      - name: Instalar dependências do projeto epg-org
+        run: |
+          cd epg-org
+          npm install
+
+      - name: Rodar atualização do VivoPlay
+        run: |
+          cd epg-org
+          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../guide.xml
+
+      - name: Commit e push (se houver alterações)
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add sites/vivoplay.com.br/vivoplay.com.br.channels.xml
+          git add guide.xml
           if git diff --cached --quiet; then
             echo "Nenhuma mudança detectada"
           else
