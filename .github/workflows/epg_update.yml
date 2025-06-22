@@ -1,49 +1,40 @@
-name: Atualizar EPG VivoPlay a cada hora
+name: Atualizar canais VivoPlay a cada hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Executa a cada 1 hora
+    - cron: '0 * * * *'  # a cada hora
   workflow_dispatch:
 
 jobs:
-  build:
+  update_channels:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do repositório com permissão de push
+      - name: Checkout do seu repositório
         uses: actions/checkout@v3
         with:
-          persist-credentials: true  # Importante para permitir o push com o GITHUB_TOKEN
+          persist-credentials: true
+          fetch-depth: 0
 
-      - name: Clonar o repositório oficial iptv-org/epg
-        run: git clone --depth=1 https://github.com/iptv-org/epg.git
-
-      - name: Instalar Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
       - name: Instalar dependências
+        run: npm install
+
+      - name: Atualizar lista de canais VivoPlay
         run: |
-          cd epg
-          npm install
+          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=./sites/vivoplay.com.br/vivoplay.com.br.channels.xml
 
-      - name: Gerar o guide.xml apenas da VivoPlay
-        run: |
-          cd epg
-          npm run grab --- --site=vivoplay.com.br --output=guide.xml
-
-      - name: Copiar o guide.xml para o repositório
-        run: cp epg/guide.xml .
-
-      - name: Commit e push (se houver alterações)
+      - name: Commit e push se houver mudanças
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add guide.xml
+          git add sites/vivoplay.com.br/vivoplay.com.br.channels.xml
           if git diff --cached --quiet; then
             echo "Nenhuma mudança detectada"
           else
-            git commit -m "Atualização automática do EPG VivoPlay"
+            git commit -m "Atualização automática da lista de canais VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
             git push
-          fi
