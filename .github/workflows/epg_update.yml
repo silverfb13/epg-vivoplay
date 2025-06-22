@@ -2,7 +2,7 @@ name: Atualizar EPG VivoPlay a cada 1 hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # A cada 1 hora
+    - cron: '0 * * * *'  # Executa a cada 1 hora
   workflow_dispatch:
 
 jobs:
@@ -42,3 +42,4 @@ jobs:
           else
             git commit -m "Atualização automática VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:master
+            
