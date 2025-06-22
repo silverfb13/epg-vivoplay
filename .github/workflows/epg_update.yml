@@ -2,7 +2,7 @@ name: Atualizar EPG VivoPlay a cada 1 hora
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 * * * *'  # a cada 1 hora
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout do repositório
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clonar repositório original do EPG
         run: git clone --depth 1 https://github.com/iptv-org/epg.git epg-org
@@ -21,12 +23,6 @@ jobs:
         run: |
           npm install
           npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml
-
-      - name: Instalar xmllint (libxml2-utils)
-        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
-
-      - name: Formatar guide.xml com xmllint
-        run: xmllint --format guide.xml -o guide.xml
 
       - name: Configurar git
         run: |
