@@ -2,7 +2,7 @@ name: Atualizar EPG VivoPlay a cada 1 hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # a cada 1 hora
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,9 @@ jobs:
         run: |
           npm install
           npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml
+
+      - name: Instalar xmllint (libxml2-utils)
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
       - name: Formatar guide.xml com xmllint
         run: xmllint --format guide.xml -o guide.xml
