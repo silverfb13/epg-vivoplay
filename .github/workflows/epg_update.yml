@@ -1,16 +1,16 @@
-name: Atualizar canais VivoPlay a cada hora
+name: Atualizar Canais VivoPlay a cada hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # a cada hora
+    - cron: '0 * * * *'  # A cada hora
   workflow_dispatch:
 
 jobs:
-  update_channels:
+  update-vivoplay:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do seu repositório
+      - name: Checkout do repositório
         uses: actions/checkout@v3
         with:
           persist-credentials: true
@@ -19,16 +19,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'  # Pra evitar warning de versão de engine
 
-      - name: Instalar dependências
-        run: npm install
+      - name: Instalar dependências (pular postinstall)
+        run: SKIP_POSTINSTALL=true npm install
 
-      - name: Atualizar lista de canais VivoPlay
+      - name: Atualizar canais VivoPlay
         run: |
           npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=./sites/vivoplay.com.br/vivoplay.com.br.channels.xml
 
-      - name: Commit e push se houver mudanças
+      - name: Commit e push se houver alterações
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
@@ -36,5 +36,5 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nenhuma mudança detectada"
           else
-            git commit -m "Atualização automática da lista de canais VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
+            git commit -m "Atualização automática VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
             git push
