@@ -1,8 +1,8 @@
-name: Atualizar apenas o EPG VivoPlay a cada hora
+name: Atualizar EPG VivoPlay a cada hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Executa de hora em hora
+    - cron: '0 * * * *'  # Executa a cada 1 hora
   workflow_dispatch:
 
 jobs:
@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do seu repositório
+      - name: Checkout do repositório com permissão de push
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true  # Importante para permitir o push com o GITHUB_TOKEN
 
       - name: Clonar o repositório oficial iptv-org/epg
         run: git clone --depth=1 https://github.com/iptv-org/epg.git
@@ -26,23 +28,22 @@ jobs:
           cd epg
           npm install
 
-      - name: Rodar o grab apenas da VivoPlay
+      - name: Gerar o guide.xml apenas da VivoPlay
         run: |
           cd epg
           npm run grab --- --site=vivoplay.com.br --output=guide.xml
 
-      - name: Copiar o guide.xml gerado para a raiz do seu repositório
+      - name: Copiar o guide.xml para o repositório
         run: cp epg/guide.xml .
 
-      - name: Configurar Git
+      - name: Commit e push (se houver alterações)
         run: |
           git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-      - name: Fazer Commit e Push
-        env:
-          TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
+          git config user.email "github-actions@users.noreply.github.com"
           git add guide.xml
-          git commit -m "EPG VivoPlay atualizado automaticamente - $(date '+%Y-%m-%d %H:%M:%S')" || echo "Nenhuma alteração"
-          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:master
+          if git diff --cached --quiet; then
+            echo "Nenhuma mudança detectada"
+          else
+            git commit -m "Atualização automática do EPG VivoPlay"
+            git push
+          fi
