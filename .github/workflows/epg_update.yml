@@ -35,6 +35,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nenhuma mudança detectada"
           else
+            export TZ=Etc/GMT-3
             git commit -m "Atualização automática do EPG VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
             git push
           fi
