@@ -2,7 +2,7 @@ name: Atualizar EPG VivoPlay a cada 1 hora
 
 on:
   schedule:
-    - cron: '0 * * * *'  # a cada 1 hora
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -18,11 +18,19 @@ jobs:
       - name: Clonar repositório original do EPG
         run: git clone --depth 1 https://github.com/iptv-org/epg.git epg-org
 
-      - name: Rodar comando para atualizar channels
+      - name: Instalar dependências
+        working-directory: ./epg-org
+        run: npm install
+
+      - name: Atualizar lista de canais (parse)
         working-directory: ./epg-org
         run: |
-          npm install
-          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml --timezone=America/Sao_Paulo
+          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=./sites/vivoplay.com.br/vivoplay.com.br.channels.xml
+
+      - name: Gerar guide.xml com timezone correto
+        working-directory: ./epg-org
+        run: |
+          npm run grab --- --site=vivoplay.com.br --output=../../guide.xml --timezone=America/Sao_Paulo
 
       - name: Configurar git
         run: |
