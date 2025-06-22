@@ -22,7 +22,7 @@ jobs:
         working-directory: ./epg-org
         run: |
           npm install
-          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml
+          npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml --timezone=America/Sao_Paulo
 
       - name: Configurar git
         run: |
@@ -35,7 +35,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nenhuma mudança detectada"
           else
-            export TZ=Etc/GMT-3
+            export TZ=America/Sao_Paulo
             git commit -m "Atualização automática do EPG VivoPlay - $(date '+%Y-%m-%d %H:%M:%S')"
             git push
           fi
