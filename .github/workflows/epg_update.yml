@@ -24,11 +24,6 @@ jobs:
           npm install
           npm run channels:parse --- --config=./sites/vivoplay.com.br/vivoplay.com.br.config.js --output=../../guide.xml
 
-      - name: Ajustar timezone do guide.xml para +3
-        run: |
-          sed -E -i 's/(start="([0-9]{14}) )\+0000"/echo "\1+0300"/ge' ../../guide.xml
-          sed -E -i 's/(stop="([0-9]{14}) )\+0000"/echo "\1+0300"/ge' ../../guide.xml
-
       - name: Configurar git
         run: |
           git config user.name "github-actions"
